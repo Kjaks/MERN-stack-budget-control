@@ -1,0 +1,1 @@
+//Funciones para manejar errores uniformemente

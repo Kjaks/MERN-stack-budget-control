@@ -1,4 +1,4 @@
-import { connectToDatabase } from './database/db';
+import { connectToDatabase } from './config/db';
 
 const express = require('express');
 const app = express();
@@ -37,4 +37,3 @@ const startServer = async () => {
 };
 
 startServer();
-

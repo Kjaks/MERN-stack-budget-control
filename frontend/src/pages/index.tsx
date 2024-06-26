@@ -8,7 +8,6 @@ const HomePage: React.FC = () => {
       try {
         const res = await fetch('http://localhost:8000/api/message');
         const data = await res.json();
-        console.log("I NEED TO FUCKING NUT");
         
         if (data.message.includes('Server and MONGODB is up ')) {
           setConnected(true);
@@ -26,9 +25,9 @@ const HomePage: React.FC = () => {
   return (
     <div>
       {connected ? (
-        <p>Connected to MongoDB</p>
+        <p>Connec MsonasfdasdfasgoDB</p>
       ) : (
-        <p>Error with MongoDB</p>
+        <p>Error with noDB</p>
       )}
     </div>
   );

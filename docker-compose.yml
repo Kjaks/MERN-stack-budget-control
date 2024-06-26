@@ -13,5 +13,7 @@ services:
     container_name: mern-frontend
     ports:
       - "3000:3000"
+    volumes:
+    - ./frontend:/usr/src/app
     depends_on:
       - backend
