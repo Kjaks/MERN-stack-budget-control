@@ -1,0 +1,17 @@
+services:
+  backend: 
+    build: ./backend
+    container_name: mern-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - MONGO_URI=mongodb+srv://karolisjakas04:TWelA97Z4DvhPwtH@testcluster.kiymor1.mongodb.net/to_do_list_db?retryWrites=true&w=majority&appName=TestCluster
+      - NODE_ENV=development
+
+  frontend: 
+    build: ./frontend
+    container_name: mern-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
