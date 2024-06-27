@@ -1,7 +1,7 @@
 // services/authService.ts
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import User, { IUser } from '../models/User';
+import User from '../models/user.model';
 import { Document } from 'mongoose';
 import dotenv from 'dotenv';
 
