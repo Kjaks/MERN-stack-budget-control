@@ -30,23 +30,34 @@ const Login: React.FC = () => {
     };
 
     return (
-        <form onSubmit={handleLogin}>
-            <input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-            />
-            <input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-            />
-            <button type="submit">Login</button>
-        </form>
+            <form onSubmit={handleLogin} className="w-full max-w-sm">
+                <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
+                <div className="mb-4">
+                    <input
+                        type="email"
+                        id="email"
+                        placeholder="Email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                        className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                </div>
+                <div className="mb-6">
+                    <input
+                        type="password"
+                        id="password"
+                        placeholder="Password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                </div>
+                <button type="submit" className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">
+                    Login
+                </button>
+            </form>
     );
 };
 
