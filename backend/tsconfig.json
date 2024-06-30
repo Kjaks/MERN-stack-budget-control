@@ -1,16 +1,16 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
-    "module": "CommonJS",
+    "target": "ESNext", // Puedes mantener ESNext si estás apuntando a la versión más reciente de ECMAScript
+    "module": "CommonJS", // Asegúrate de que "module" esté configurado como "CommonJS" si estás utilizando Node.js
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "outDir": "./dist",
-    "rootDir": "./",
-    "baseUrl": "./src", // Base directory to resolve non-relative module names
+    "outDir": "./dist", // Directorio donde se generarán los archivos compilados
+    "rootDir": "./", // Directorio raíz de tu código fuente TypeScript
+    "baseUrl": "./src", // Directorio base para resolver nombres de módulos no relativos
     "typeRoots": ["./node_modules/@types", "./src/types"]
   },
-  "include": ["./**/*.ts"],
-  "exclude": ["node_modules"]
+  "include": ["./src/**/*.ts", "index.ts"], // Patrón para incluir archivos TypeScript desde el directorio src
+  "exclude": ["node_modules"] // Excluir la carpeta node_modules para la compilación
 }

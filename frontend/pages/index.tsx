@@ -1,6 +1,7 @@
+// pages/index.tsx
 import React, { useState } from 'react';
 import Register from '../components/Register';
-import Login from '../components/Login'; // Importamos el componente de Login
+import Login from '../components/Login';
 
 const HomePage: React.FC = () => {
     const [showLogin, setShowLogin] = useState(false); // Estado para controlar qué componente mostrar
@@ -34,4 +35,3 @@ const HomePage: React.FC = () => {
 };
 
 export default HomePage;
-
