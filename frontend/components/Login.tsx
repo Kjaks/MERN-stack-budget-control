@@ -23,7 +23,7 @@ const Login: React.FC = () => {
             localStorage.setItem('userName', name);
 
             // Redirigir al usuario a la página de bienvenida
-            router.push('/welcome');
+            router.push('/clientData');
         } catch (error) {
             console.error('Error en el inicio de sesión:', error);
         }

@@ -22,7 +22,7 @@ const Register: React.FC = () => {
             localStorage.setItem('userName', name); // Guardar el nombre en localStorage
 
             // Redirigir al usuario a la página de bienvenida
-            router.push('/welcome');
+            router.push('/clientData');
         } catch (error) {
             console.error('Error en el registro:', error);
         }
