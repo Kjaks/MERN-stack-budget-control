@@ -4,6 +4,7 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import messageRoutes from './src/routes/auth.routes';
+import moneyRoutes from './src/routes/money.routes';
 
 dotenv.config();
 
@@ -30,6 +31,7 @@ mongoose.connect(`${MONGODB_URI}`)
 
 // Rutas
 app.use('/api', messageRoutes);
+app.use('/api', moneyRoutes);
 
 // Puerto del servidor
 const PORT = process.env.PORT || 8000;

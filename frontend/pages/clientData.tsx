@@ -1,22 +1,62 @@
+// pages/ClientData.tsx
 import React, { useEffect, useState } from 'react';
 import FinancialSummary from '../components/FinancialSummary';
 import TransactionTable from '../components/TransactionTable';
 import Image from 'next/image';
+import ExpensePopup from '../components/PopUp';
+
+const fetchUserData = async (): Promise<{ userName: string; balance: number; expenses: number } | null> => {
+    try {
+        // Simulación de carga de datos desde un servicio externo
+        return {
+            userName: 'Usuario Ejemplo',
+            balance: 1200,  // Aquí obtendrías el saldo actual desde tu backend
+            expenses: 400   // Aquí obtendrías los gastos desde tu backend
+        };
+    } catch (error) {
+        console.error('Error al obtener datos del usuario:', error);
+        return null;
+    }
+};
 
 const ClientData: React.FC = () => {
     const [userName, setUserName] = useState<string | null>(null);
     const [balance, setBalance] = useState<number>(0);
     const [expenses, setExpenses] = useState<number>(0);
+    const [isPopupOpen, setIsPopupOpen] = useState<boolean>(false);
+    const [popupType, setPopupType] = useState<'income' | 'expense' | null>(null); // Tipo de popup: ingreso o gasto
 
     useEffect(() => {
-        // Simulación de carga de datos desde localStorage
-        const storedUserName = localStorage.getItem('userName');
-        if (storedUserName) {
-            setUserName(storedUserName);
-            setBalance(1200); // Simulación de saldo
-            setExpenses(400); // Simulación de gastos
-        }
+        const fetchData = async () => {
+            const userData = await fetchUserData();
+            if (userData) {
+                setUserName(userData.userName);
+                setBalance(userData.balance);
+                setExpenses(userData.expenses);
+            }
+        };
+
+        fetchData();
     }, []);
+
+    const handleExpenseSubmit = (description: string, amount: number) => {
+        console.log('Descripción Gasto:', description);
+        console.log('Valor Gasto:', amount);
+        // Aquí puedes realizar operaciones adicionales como enviar datos al backend
+        setIsPopupOpen(false); // Cerrar el popup después de enviar
+    };
+
+    const handleIncomeSubmit = (description: string, amount: number) => {
+        console.log('Descripción Ingreso:', description);
+        console.log('Valor Ingreso:', amount);
+        // Aquí puedes realizar operaciones adicionales como enviar datos al backend
+        setIsPopupOpen(false); // Cerrar el popup después de enviar
+    };
+
+    const handlePopupOpen = (type: 'income' | 'expense') => {
+        setPopupType(type);
+        setIsPopupOpen(true);
+    };
 
     return (
         <div className="min-h-screen bg-gradient-to-r from-blue-100 to-indigo-200 max-w-full grid grid-cols-3 gap-10 p-1">
@@ -30,9 +70,11 @@ const ClientData: React.FC = () => {
                 </div>
                 <div className="flex items-center justify-end col-span-1">
                     {/* Columna Derecha */}
-                    <a href="/">
-                        <Image src="/pngwing.com.png" alt="Logout" width={48} height={48} />
-                    </a>
+                    <button>
+                        <a href='/'>
+                            <Image src="/pngwing.com.png" alt="Logout" width={48} height={48} />
+                        </a>
+                    </button>
                 </div>
             </header>
 
@@ -49,14 +91,23 @@ const ClientData: React.FC = () => {
             <div className="col-span-3 flex items-center justify-center">
                 {/* Contenido de la tercera fila de tres columnas */}
                 <section className="flex flex-col md:flex-row items-center justify-around gap-4 w-1/2 g-1/2">
-                    <a href="/add-income" className="bg-green-500 text-white py-3 px-6 rounded-lg shadow hover:bg-green-600 text-center">Agregar Ingreso</a>
-                    <a href="/add-expense" className="bg-red-500 text-white py-3 px-6 rounded-lg shadow hover:bg-red-600 text-center">Agregar Gasto</a>
+                    <button onClick={() => handlePopupOpen('income')} className="bg-green-500 text-white py-3 px-6 rounded-lg shadow hover:bg-green-600 text-center">Agregar Ingreso</button>
+                    <button onClick={() => handlePopupOpen('expense')} className="bg-red-500 text-white py-3 px-6 rounded-lg shadow hover:bg-red-600 text-center">Agregar Gasto</button>
                 </section>
             </div>
 
             <footer className="text-center text-gray-600 mt-6 col-span-3">
                 <p>&copy; {new Date().getFullYear()} Karolis Jakas Stirbyte</p>
             </footer>
+
+            {/* Popup de Agregar Ingreso o Gasto */}
+            {isPopupOpen && popupType && (
+                <ExpensePopup
+                    type={popupType}
+                    onSubmit={popupType === 'income' ? handleIncomeSubmit : handleExpenseSubmit}
+                    onClose={() => setIsPopupOpen(false)}
+                />
+            )}
         </div>
     );
 };
