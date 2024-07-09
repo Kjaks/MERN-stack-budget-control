@@ -7,7 +7,6 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET;
-console.log('JWT_SECRET:', JWT_SECRET);
 
 export const register = async (req: Request, res: Response): Promise<void> => {
   const { name, email, password } = req.body;
@@ -30,8 +29,10 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
     res.status(201).json({ message: 'Usuario registrado correctamente', token });
   } catch (error) {
-    res.status(500).json({ error: "error" });
-  }
+    const err = error as Error; // Asumiendo que error es de tipo Error
+    console.error('Error en el registro:', err.message); 
+    res.status(500).json({ error: err.message }); 
+  };
 };
 
 export const login = async (req: Request, res: Response): Promise<void> => {
@@ -54,14 +55,10 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // Si llegamos aquí, la autenticación es exitosa
-    // Generar token JWT
-    const token = jwt.sign({ userId: user._id }, `${JWT_SECRET}`);
-
-    // Enviar la respuesta con el nombre del usuario
-    res.status(200).json({ message: 'Inicio de ón exitoso', name: user.name });
+    // Enviar la respuesta con el nombre y userId del usuario
+    res.status(200).json({ message: 'Inicio de sesión exitoso', name: user.name, userId: user._id });
   } catch (error) {
     console.error('Error en login:', error);
-    res.status(500).json({ error: "Error en el servidor" });
+    res.status(500).json({ error: 'Error en el servidor' });
   }
 };

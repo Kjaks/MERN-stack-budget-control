@@ -5,7 +5,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - MONGO_URI=mongodb+srv://karolisjakas04:TWelA97Z4DvhPwtH@testcluster.kiymor1.mongodb.net/to_do_list_db?retryWrites=true&w=majority&appName=TestCluster
+      - MONGO_URI=mongodb+srv://karolisjakas04:TWelA97Z4DvhPwtH@testcluster.kiymor1.mongodb.net/Budget_control?retryWrites=true&w=majority&appName=TestCluster
       - NODE_ENV=development
 
   frontend: 

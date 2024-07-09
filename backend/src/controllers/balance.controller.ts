@@ -1,62 +1,66 @@
 import { Request, Response } from 'express';
-import Balance, { IBalance } from '../models/balance.model';
-import Expense from '../models/expenses.model';
-import mongoose from 'mongoose';
+import Balance from '../models/balance.model';
+import Transaction from '../models/transaction.model';
+import moment from 'moment';
 
-export const calculateMonthlySavings = async (req: Request, res: Response): Promise<void> => {
-  const { userId, month } = req.params;
+// Función para calcular los ahorros mensuales
+export const calculateMonthlySavings = async (req: Request, res: Response) => {
+    try {
+        const { userId, month } = req.params;
 
-  try {
-    const startDate = new Date(`${month}-01`);
-    const endDate = new Date(startDate);
-    endDate.setMonth(endDate.getMonth() + 1);
+        // Obtener las transacciones del mes especificado
+        const startDate = moment(month, 'YYYY-MM').startOf('month').toISOString();
+        const endDate = moment(month, 'YYYY-MM').endOf('month').toISOString();
 
-    const expenses = await Expense.aggregate([
-      {
-        $match: {
-          userId: new mongoose.Types.ObjectId(userId),
-          date: {
-            $gte: startDate,
-            $lt: endDate
-          }
-        }
-      },
-      {
-        $group: {
-          _id: null,
-          totalExpenses: { $sum: '$amount' }
-        }
-      }
-    ]);
+        const transactions = await Transaction.find({
+            userId,
+            date: { $gte: startDate, $lte: endDate }
+        });
 
-    const totalExpenses = expenses.length ? expenses[0].totalExpenses : 0;
-    
-    let balance = await Balance.findOne({ userId, month });
+        // Calcular el total de ingresos y gastos
+        let totalIncome = 0;
+        let totalExpenses = 0;
 
-    if (!balance) {
-      res.status(404).json({ error: 'Balance inicial no encontrado para el mes especificado' });
-      return;
+        transactions.forEach(transaction => {
+            if (transaction.type === 'income') {
+                totalIncome += transaction.amount;
+            } else {
+                totalExpenses += transaction.amount;
+            }
+        });
+
+        // Calcular los ahorros (ingresos - gastos)
+        const savings = totalIncome - totalExpenses;
+
+        // Crear o actualizar el balance mensual en la base de datos
+        const balance = await Balance.findOneAndUpdate(
+            { userId, month },
+            { userId, month, expenses: totalExpenses, savings },
+            { upsert: true, new: true }
+        );
+
+        res.status(200).json(balance);
+    } catch (error) {
+        console.error('Error al calcular los ahorros mensuales:', error);
+        res.status(500).json({ message: 'Error interno del servidor' });
     }
-
-    const savings = balance.initialBalance - totalExpenses;
-
-    balance.expenses = totalExpenses;
-    balance.savings = savings;
-    await balance.save();
-
-    res.status(200).json({ message: 'Ahorros mensuales calculados y registrados', balance });
-  } catch (error) {
-    res.status(500).json({ error: 'Error al calcular los ahorros mensuales' });
-  }
 };
 
-export const getBalances = async (req: Request, res: Response): Promise<void> => {
-  const { userId } = req.params;
+// Función para obtener los balances de un usuario por mes específico
+export const getBalances = async (req: Request, res: Response) => {
+    try {
+        const { userId, month } = req.params;
 
-  try {
-    const balances = await Balance.find({ userId }).sort({ month: 1 });
-    res.status(200).json(balances);
-  } catch (error) {
-    res.status(500).json({ error: 'Error al obtener los balances' });
-  }
+        // Obtener el balance del mes específico
+        const balance = await Balance.findOne({ userId, month });
+
+        if (!balance) {
+            return res.status(404).json({ message: 'No se encontró el balance para el mes especificado' });
+        }
+
+        res.status(200).json(balance);
+    } catch (error) {
+        console.error('Error al obtener el balance mensual:', error);
+        res.status(500).json({ message: 'Error interno del servidor' });
+    }
 };
