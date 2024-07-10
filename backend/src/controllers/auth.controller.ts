@@ -27,7 +27,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     // Generar token JWT
     const token = jwt.sign({ userId: user._id }, `${JWT_SECRET}`);
 
-    res.status(201).json({ message: 'Usuario registrado correctamente', token });
+    res.status(201).json({ message: 'Usuario registrado correctamente', token, name: user.name, userId: user._id });
   } catch (error) {
     const err = error as Error; // Asumiendo que error es de tipo Error
     console.error('Error en el registro:', err.message); 

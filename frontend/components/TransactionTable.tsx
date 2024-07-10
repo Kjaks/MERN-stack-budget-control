@@ -7,7 +7,6 @@ interface Transaction {
   amount: number;
   type: string;
   date: string;
-  __v: number;
 }
 
 interface TransactionTableProps {

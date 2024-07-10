@@ -7,102 +7,107 @@ import ExpensePopup from '../components/PopUp';
 import Link from 'next/link';
 
 interface Transaction {
-  id: number;
+  _id: string;
+  userId: string;
   description: string;
   amount: number;
+  type: 'income' | 'expense';
+  date: string;
+}
+
+interface MonthData {
+  income: number;
+  expenses: number;
+  savings: number;
 }
 
 const ClientData: React.FC = () => {
   const [userName, setUserName] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
   const [balance, setBalance] = useState<number>(0);
   const [expenses, setExpenses] = useState<number>(0);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isPopupOpen, setIsPopupOpen] = useState<boolean>(false);
   const [popupType, setPopupType] = useState<'income' | 'expense' | null>(null);
+  const [monthData, setMonthData] = useState<MonthData>({ income: 0, expenses: 0, savings: 0 });
+  const [annualSavings, setAnnualSavings] = useState<number>(0);
+
+  const currentMonth = new Date().getMonth();
+  const currentMonthName = new Date().toLocaleDateString('es-ES', { month: 'long' });
 
   useEffect(() => {
     const storedUserName = localStorage.getItem('userName');
-    const userId = localStorage.getItem('userId');
-    if (storedUserName && userId) {
+    const storedUserId = localStorage.getItem('userId');
+    if (storedUserName && storedUserId) {
       setUserName(storedUserName);
-  
-      // Obtener las transacciones del usuario
-      axios.get(`http://localhost:8000/api/transactions/${userId}`)
-      .then(response => {
-        // Verifica si la respuesta contiene datos válidos de transacciones
-        if (Array.isArray(response.data)) {
-          // Actualiza el estado de transactions con la respuesta de la API
-          setTransactions(response.data);
-    
-          // Calcula balance y gastos basados en las transacciones
+      setUserId(storedUserId);
+
+      axios.get(`http://localhost:8000/api/transactions/${storedUserId}`)
+        .then(response => {
+          const fetchedTransactions: Transaction[] = response.data;
+
           let totalBalance = 0;
           let totalExpenses = 0;
-          response.data.forEach((transaction: Transaction) => {
-            if (transaction.amount >= 0) {
+          let monthIncome = 0;
+          let monthExpenses = 0;
+          let totalIncome = 0;
+
+          fetchedTransactions.forEach((transaction: Transaction) => {
+            const transactionMonth = new Date(transaction.date).getMonth();
+            if (transaction.type === 'income') {
               totalBalance += transaction.amount;
+              totalIncome += transaction.amount;
+              if (transactionMonth === currentMonth) {
+                monthIncome += transaction.amount;
+              }
             } else {
               totalExpenses += Math.abs(transaction.amount);
+              if (transactionMonth === currentMonth) {
+                monthExpenses += Math.abs(transaction.amount);
+              }
             }
           });
+
+          const annualSavings = totalIncome - totalExpenses;
+          setTransactions(fetchedTransactions);
           setBalance(totalBalance);
           setExpenses(totalExpenses);
-        } else {
-          console.error('La respuesta no contiene un array de transacciones válido:', response.data);
-        }
-      })
-      .catch(error => {
-        console.error('Error al obtener transacciones:', error);
-      });
-    
-  
-      // Obtener el balance del usuario
-      axios.get(`http://localhost:8000/api/balances/${userId}`)
-        .then(response => {
-          setBalance(response.data.balance);
-          setExpenses(response.data.expenses);
+          setMonthData({
+            income: monthIncome,
+            expenses: monthExpenses,
+            savings: monthIncome - monthExpenses,
+          });
+          setAnnualSavings(annualSavings);
         })
         .catch(error => {
-          console.error('Error al obtener balance:', error);
+          console.error('Error fetching transactions:', error);
         });
     }
   }, []);
-  
 
-  const handleExpenseSubmit = (description: string, amount: number) => {
+  const handleAddTransaction = (description: string, amount: number, date: string) => {
     const userId = localStorage.getItem('userId');
     if (!userId) return;
+
+    const type = popupType === 'income' ? 'income' : 'expense';
 
     axios.post('http://localhost:8000/api/transactions', {
       userId,
       description,
-      amount: -amount  // Negativo para gastos
+      amount,
+      date,
+      type
     })
     .then(response => {
-      const newTransaction = response.data.transaction;
-      setTransactions([...transactions, newTransaction]);
-      setBalance(balance + newTransaction.amount);
-      setExpenses(expenses + Math.abs(newTransaction.amount));
-    })
-    .catch(error => {
-      console.error('Error adding transaction:', error);
-    });
+      const newTransaction = response.data;
 
-    setIsPopupOpen(false);
-  };
+      setTransactions(prevTransactions => [...prevTransactions, newTransaction]);
 
-  const handleIncomeSubmit = (description: string, amount: number) => {
-    const userId = localStorage.getItem('userId');
-    if (!userId) return;
-
-    axios.post('http://localhost:8000/api/transactions', {
-      userId,
-      description,
-      amount
-    })
-    .then(response => {
-      const newTransaction = response.data.transaction;
-      setTransactions([...transactions, newTransaction]);
-      setBalance(balance + newTransaction.amount);
+      if (type === 'income') {
+        setBalance(prevBalance => prevBalance + newTransaction.amount);
+      } else {
+        setExpenses(prevExpenses => prevExpenses + newTransaction.amount);
+      }
     })
     .catch(error => {
       console.error('Error adding transaction:', error);
@@ -117,12 +122,14 @@ const ClientData: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-blue-100 to-indigo-200 max-w-full grid grid-cols-3 gap-10 p-1">
+    <div className="min-h-screen bg-gradient-to-r from-blue-100 to-indigo-200 max-w-full grid grid-cols-3 gap-2 p-1">
       <header className="col-span-3 h-full flex items-center justify-between px-4">
         <div className="flex items-center justify-center col-span-1">
         </div>
         <div className="flex items-center justify-self-stretch col-span-1">
-          <h1 className="text-4xl font-bold text-gray-800 text-center pl-12">Hola, {userName}!</h1>
+          <h1 className="text-4xl font-bold text-gray-800 text-center pl-12">
+            Hola, {userName}!
+          </h1>
         </div>
         <div className="flex items-center justify-end col-span-1">
           <button>
@@ -134,7 +141,7 @@ const ClientData: React.FC = () => {
       </header>
 
       <div className="col-span-3">
-        <FinancialSummary balance={balance} expenses={expenses} />
+        <FinancialSummary balance={balance} expenses={expenses} transactions={transactions} />
       </div>
       
       <div className="col-span-3">
@@ -155,7 +162,7 @@ const ClientData: React.FC = () => {
       {isPopupOpen && popupType && (
         <ExpensePopup
           type={popupType}
-          onSubmit={popupType === 'income' ? handleIncomeSubmit : handleExpenseSubmit}
+          onSubmit={handleAddTransaction}
           onClose={() => setIsPopupOpen(false)}
         />
       )}
@@ -164,3 +171,4 @@ const ClientData: React.FC = () => {
 };
 
 export default ClientData;
+

@@ -14,12 +14,16 @@ const Register: React.FC = () => {
         try {
             const response = await axios.post('http://localhost:8000/api/register', { name, email, password });
 
-            // Extraer el token desde la respuesta
-            const { token } = response.data;
+            // Extraer el token y userId desde la respuesta
+            const { token, userId } = response.data;
 
-            // Guardar el token y el nombre de usuario en localStorage
+            // Guardar el token, userId y el nombre de usuario en localStorage
             localStorage.setItem('token', token);
+            localStorage.setItem('userId', userId); // Guardar el userId en localStorage
             localStorage.setItem('userName', name); // Guardar el nombre en localStorage
+
+            console.log(userId);
+            console.log(name);
 
             // Redirigir al usuario a la página de bienvenida
             router.push('/clientData');
@@ -29,45 +33,45 @@ const Register: React.FC = () => {
     };
 
     return (
-            <form onSubmit={handleRegister} className="max-w-sm">
-                <h2 className="text-2xl font-bold mb-6 text-center">Register</h2>
-                <div className="mb-4">
-                    <input
-                        type="text"
-                        id="name"
-                        placeholder="Name"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        required
-                        className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                </div>
-                <div className="mb-4">
-                    <input
-                        type="email"
-                        id="email"
-                        placeholder="Email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                        className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                </div>
-                <div className="mb-6">
-                    <input
-                        type="password"
-                        id="password"
-                        placeholder="Password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                </div>
-                <button type="submit" className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">
-                    Register
-                </button>
-            </form>
+        <form onSubmit={handleRegister} className="max-w-sm">
+            <h2 className="text-2xl font-bold mb-6 text-center">Register</h2>
+            <div className="mb-4">
+                <input
+                    type="text"
+                    id="name"
+                    placeholder="Name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                    className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+            </div>
+            <div className="mb-4">
+                <input
+                    type="email"
+                    id="email"
+                    placeholder="Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+            </div>
+            <div className="mb-6">
+                <input
+                    type="password"
+                    id="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+            </div>
+            <button type="submit" className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">
+                Register
+            </button>
+        </form>
     );
 };
 
