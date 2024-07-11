@@ -6,6 +6,7 @@ import Image from 'next/image';
 import ExpensePopup from '../components/PopUp';
 import Link from 'next/link';
 
+// Define the structure of a Transaction object
 interface Transaction {
   _id: string;
   userId: string;
@@ -15,6 +16,7 @@ interface Transaction {
   date: string;
 }
 
+// Define the structure of MonthData for financial summaries
 interface MonthData {
   income: number;
   expenses: number;
@@ -32,9 +34,10 @@ const ClientData: React.FC = () => {
   const [monthData, setMonthData] = useState<MonthData>({ income: 0, expenses: 0, savings: 0 });
   const [annualSavings, setAnnualSavings] = useState<number>(0);
 
+  // Get the current month
   const currentMonth = new Date().getMonth();
-  const currentMonthName = new Date().toLocaleDateString('es-ES', { month: 'long' });
 
+  // Fetch user and transaction data on component mount
   useEffect(() => {
     const storedUserName = localStorage.getItem('userName');
     const storedUserId = localStorage.getItem('userId');
@@ -46,6 +49,7 @@ const ClientData: React.FC = () => {
         .then(response => {
           const fetchedTransactions: Transaction[] = response.data;
 
+          // Calculate balances and expenses
           let totalBalance = 0;
           let totalExpenses = 0;
           let monthIncome = 0;
@@ -85,6 +89,7 @@ const ClientData: React.FC = () => {
     }
   }, []);
 
+  // Add a new transaction
   const handleAddTransaction = (description: string, amount: number, date: string) => {
     const userId = localStorage.getItem('userId');
     if (!userId) return;
@@ -101,6 +106,7 @@ const ClientData: React.FC = () => {
     .then(response => {
       const newTransaction = response.data;
 
+      // Update transactions and balances based on the new transaction
       setTransactions(prevTransactions => [...prevTransactions, newTransaction]);
 
       if (type === 'income') {
@@ -116,6 +122,7 @@ const ClientData: React.FC = () => {
     setIsPopupOpen(false);
   };
 
+  // Open the popup for adding a transaction
   const handlePopupOpen = (type: 'income' | 'expense') => {
     setPopupType(type);
     setIsPopupOpen(true);
@@ -128,7 +135,7 @@ const ClientData: React.FC = () => {
         </div>
         <div className="flex items-center justify-self-stretch col-span-1">
           <h1 className="text-4xl font-bold text-gray-800 text-center pl-12">
-            Hola, {userName}!
+            Hi, {userName}!
           </h1>
         </div>
         <div className="flex items-center justify-end col-span-1">
@@ -150,8 +157,8 @@ const ClientData: React.FC = () => {
 
       <div className="col-span-3 flex items-center justify-center">
         <section className="flex flex-col md:flex-row items-center justify-around gap-4 w-1/2 g-1/2">
-          <button onClick={() => handlePopupOpen('income')} className="bg-green-500 text-white py-3 px-6 rounded-lg shadow hover:bg-green-600 text-center">Agregar Ingreso</button>
-          <button onClick={() => handlePopupOpen('expense')} className="bg-red-500 text-white py-3 px-6 rounded-lg shadow hover:bg-red-600 text-center">Agregar Gasto</button>
+          <button onClick={() => handlePopupOpen('income')} className="bg-green-500 text-white py-3 px-6 rounded-lg shadow hover:bg-green-600 text-center">Add Income</button>
+          <button onClick={() => handlePopupOpen('expense')} className="bg-red-500 text-white py-3 px-6 rounded-lg shadow hover:bg-red-600 text-center">Add Expense</button>
         </section>
       </div>
 
@@ -171,4 +178,3 @@ const ClientData: React.FC = () => {
 };
 
 export default ClientData;
-

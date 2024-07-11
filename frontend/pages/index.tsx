@@ -1,10 +1,9 @@
-// pages/index.tsx
 import React, { useState } from 'react';
 import Register from '../components/Register';
 import Login from '../components/Login';
 
 const HomePage: React.FC = () => {
-    const [showLogin, setShowLogin] = useState(false); // Estado para controlar qué componente mostrar
+    const [showLogin, setShowLogin] = useState(false); 
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-r from-blue-100 to-indigo-200 px-4">

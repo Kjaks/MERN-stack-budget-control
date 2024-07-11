@@ -1,13 +1,9 @@
 import { Request, Response } from 'express';
-import Transaction, { ITransaction } from '../models/transaction.model';
+import Transaction from '../models/transaction.model';
 
-// Añadir transacción (ingreso o gasto)
+// Add a transaction (income or expense)
 export const addTransaction = async (req: Request, res: Response) => {
   const { userId, description, amount, type, date } = req.body;
-
-  if (amount <= 0) {
-    return res.status(400).json({ error: 'El monto debe ser positivo.' });
-  }
 
   try {
     const transaction = new Transaction({
@@ -15,24 +11,26 @@ export const addTransaction = async (req: Request, res: Response) => {
       description,
       amount,
       type,
-      date: new Date(date)  // Asegurarse de que la fecha esté en el formato correcto
+      date: new Date(date) 
     });
 
     await transaction.save();
+
     res.status(201).json(transaction);
   } catch (error) {
-    res.status(500).json({ error: 'Error al añadir la transacción.' });
+    res.status(500).json({ error: 'Error adding the transaction.' });
   }
 };
 
-// Obtener transacciones por usuario
+// Get transactions by user
 export const getTransactions = async (req: Request, res: Response) => {
   const { userId } = req.params;
 
   try {
     const transactions = await Transaction.find({ userId });
+
     res.status(200).json(transactions);
   } catch (error) {
-    res.status(500).json({ error: 'Error al obtener las transacciones.' });
+    res.status(500).json({ error: 'Error getting the transactions.' });
   }
 };

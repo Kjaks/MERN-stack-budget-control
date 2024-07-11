@@ -4,61 +4,58 @@ import jwt from 'jsonwebtoken';
 import User, { IUser } from '../models/user.model';
 import dotenv from 'dotenv';
 
+// Load environment variables from .env file
 dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
+// Register a new user
 export const register = async (req: Request, res: Response): Promise<void> => {
   const { name, email, password } = req.body;
 
   try {
-    // Verificar si el usuario ya existe
     let user: IUser | null = await User.findOne({ email });
     if (user) {
-      res.status(400).json({ error: 'El usuario ya existe' });
+      res.status(400).json({ error: 'User already exists' });
       return;
     }
 
-    // Crear nuevo usuario
     const hashedPassword = await bcrypt.hash(password, 12);
     user = new User({ name, email, password: hashedPassword });
     await user.save();
 
-    // Generar token JWT
     const token = jwt.sign({ userId: user._id }, `${JWT_SECRET}`);
 
-    res.status(201).json({ message: 'Usuario registrado correctamente', token, name: user.name, userId: user._id });
+    res.status(201).json({ message: 'User registered successfully', token, name: user.name, userId: user._id });
   } catch (error) {
-    const err = error as Error; // Asumiendo que error es de tipo Error
-    console.error('Error en el registro:', err.message); 
-    res.status(500).json({ error: err.message }); 
-  };
+    const err = error as Error;
+    console.error('Error in registration:', err.message);
+    res.status(500).json({ error: err.message });
+  }
 };
 
+// User login
 export const login = async (req: Request, res: Response): Promise<void> => {
   const { email, password } = req.body;
 
   try {
-    // Verificar si el usuario existe
     const user: IUser | null = await User.findOne({ email });
 
     if (!user) {
-      res.status(404).json({ error: 'Usuario no encontrado' });
+      res.status(404).json({ error: 'User not found' });
       return;
     }
 
-    // Verificar contraseña
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
-      res.status(401).json({ error: 'Credenciales inválidas' });
+      res.status(401).json({ error: 'Invalid credentials' });
       return;
     }
 
-    // Enviar la respuesta con el nombre y userId del usuario
-    res.status(200).json({ message: 'Inicio de sesión exitoso', name: user.name, userId: user._id });
+    res.status(200).json({ message: 'Login successful', name: user.name, userId: user._id });
   } catch (error) {
-    console.error('Error en login:', error);
-    res.status(500).json({ error: 'Error en el servidor' });
+    console.error('Error in login:', error);
+    res.status(500).json({ error: 'Server error' });
   }
 };

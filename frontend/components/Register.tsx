@@ -6,29 +6,24 @@ const Register: React.FC = () => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+
     const router = useRouter();
 
+    // Function to handle form submission
     const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault();
 
         try {
             const response = await axios.post('http://localhost:8000/api/register', { name, email, password });
 
-            // Extraer el token y userId desde la respuesta
-            const { token, userId } = response.data;
+            const { userId } = response.data;
 
-            // Guardar el token, userId y el nombre de usuario en localStorage
-            localStorage.setItem('token', token);
-            localStorage.setItem('userId', userId); // Guardar el userId en localStorage
-            localStorage.setItem('userName', name); // Guardar el nombre en localStorage
+            localStorage.setItem('userId', userId); 
+            localStorage.setItem('userName', name);
 
-            console.log(userId);
-            console.log(name);
-
-            // Redirigir al usuario a la página de bienvenida
             router.push('/clientData');
         } catch (error) {
-            console.error('Error en el registro:', error);
+            console.error('Error in registration:', error);
         }
     };
 
@@ -42,6 +37,7 @@ const Register: React.FC = () => {
                     placeholder="Name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
+                    autoComplete="off"
                     required
                     className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -53,6 +49,7 @@ const Register: React.FC = () => {
                     placeholder="Email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    autoComplete="off"
                     required
                     className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -64,6 +61,7 @@ const Register: React.FC = () => {
                     placeholder="Password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    autoComplete="off"
                     required
                     className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />

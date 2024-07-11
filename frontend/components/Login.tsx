@@ -8,16 +8,15 @@ const Login: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const router = useRouter();
 
+    // Function to handle form submission
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError(null); // Reset error state
+        setError(null);
 
         try {
             const response = await axios.post('http://localhost:8000/api/login', { email, password }, { timeout: 10000 });
 
             const { userId, name } = response.data;
-            console.log('userId:', userId);
-            console.log('Name:', name);
 
             localStorage.setItem('userId', userId);
             localStorage.setItem('userName', name);
@@ -50,6 +49,7 @@ const Login: React.FC = () => {
                     placeholder="Email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    autoComplete="off"
                     required
                     className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -61,6 +61,7 @@ const Login: React.FC = () => {
                     placeholder="Password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    autoComplete="off" 
                     required
                     className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />

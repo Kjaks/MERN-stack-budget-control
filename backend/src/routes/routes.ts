@@ -1,18 +1,20 @@
 import { Router } from 'express';
 import { register, login } from '../controllers/auth.controller';
 import { addTransaction, getTransactions } from '../controllers/transaction.controller';
-import { calculateMonthlySavings, getBalances } from '../controllers/balance.controller';
+
+// Create a new Router instance
 const router: Router = Router();
 
+// Route to handle user registration
 router.post('/register', register);
+
+// Route to handle user login
 router.post('/login', login);
 
-// Rutas de transacciones (ingresos y gastos)
+// Route to add a new transaction
 router.post('/transactions', addTransaction);
-router.get('/transactions/:userId', getTransactions);
 
-// Rutas de balances
-router.post('/balances/:userId/:month/calculate', calculateMonthlySavings);
-router.get('/balances/:userId', getBalances);
+// Route to get transactions for a specific user by userId
+router.get('/transactions/:userId', getTransactions);
 
 export default router;
