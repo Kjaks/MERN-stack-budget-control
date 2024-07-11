@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import FinancialSummary from '../components/FinancialSummary';
 import TransactionTable from '../components/TransactionTable';
+import PopUp from '../components/PopUp';
 import Image from 'next/image';
-import ExpensePopup from '../components/PopUp';
 import Link from 'next/link';
 
 // Define the structure of a Transaction object
@@ -33,6 +33,8 @@ const ClientData: React.FC = () => {
   const [popupType, setPopupType] = useState<'income' | 'expense' | null>(null);
   const [monthData, setMonthData] = useState<MonthData>({ income: 0, expenses: 0, savings: 0 });
   const [annualSavings, setAnnualSavings] = useState<number>(0);
+  const [isEditPopupOpen, setIsEditPopupOpen] = useState<boolean>(false); // Estado para controlar la apertura del pop-up de edición
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null); // Estado para almacenar la transacción seleccionada para editar
 
   // Get the current month
   const currentMonth = new Date().getMonth();
@@ -45,9 +47,9 @@ const ClientData: React.FC = () => {
       setUserName(storedUserName);
       setUserId(storedUserId);
 
-      axios.get(`http://localhost:8000/api/transactions/${storedUserId}`)
+      axios.get<Transaction[]>(`http://localhost:8000/api/transactions/${storedUserId}`)
         .then(response => {
-          const fetchedTransactions: Transaction[] = response.data;
+          const fetchedTransactions = response.data;
 
           // Calculate balances and expenses
           let totalBalance = 0;
@@ -91,12 +93,9 @@ const ClientData: React.FC = () => {
 
   // Add a new transaction
   const handleAddTransaction = (description: string, amount: number, date: string) => {
-    const userId = localStorage.getItem('userId');
-    if (!userId) return;
-
     const type = popupType === 'income' ? 'income' : 'expense';
 
-    axios.post('http://localhost:8000/api/transactions', {
+    axios.post<Transaction>('http://localhost:8000/api/transactions', {
       userId,
       description,
       amount,
@@ -120,6 +119,68 @@ const ClientData: React.FC = () => {
     });
 
     setIsPopupOpen(false);
+  };
+
+  // Function to handle editing a transaction
+  const handleEdit = (id: string) => {
+    const transactionToEdit = transactions.find(transaction => transaction._id === id);
+    if (transactionToEdit) {
+      setSelectedTransaction(transactionToEdit);
+      setIsEditPopupOpen(true); // Ensure setIsEditPopupOpen is called to open the edit popup
+    } else {
+      console.error(`Transaction with ID ${id} not found.`);
+    }
+  };
+
+  // Handle submission of edited transaction
+  const handleEditSubmission = (description: string, amount: number, date: string) => {
+    if (!selectedTransaction) return;
+
+    const updatedTransaction: Transaction = {
+      ...selectedTransaction,
+      description,
+      amount,
+      date
+    };
+
+    axios.put<Transaction>(`http://localhost:8000/api/transactions/${selectedTransaction._id}`, updatedTransaction)
+      .then(response => {
+        const updatedTransaction = response.data;
+        updateTransaction(selectedTransaction._id, updatedTransaction);
+        setIsEditPopupOpen(false); // Close the edit popup after successful update
+      })
+      .catch(error => {
+        console.error('Error updating transaction:', error);
+      });
+  };
+
+  // Function to handle updating a transaction after editing
+  const updateTransaction = (id: string, updatedTransaction: Transaction) => {
+    const updatedTransactions = transactions.map(transaction =>
+      transaction._id === id ? updatedTransaction : transaction
+    );
+    setTransactions(updatedTransactions);
+  };
+
+
+  // Function to handle deleting a transaction
+  const handleDelete = async (id: string) => {
+    try {
+      await axios.delete(`http://localhost:8000/api/transactions/${id}`);
+      setTransactions(transactions.filter(transaction => transaction._id !== id));
+
+      // Update balances if necessary
+      const deletedTransaction = transactions.find(transaction => transaction._id === id);
+      if (deletedTransaction) {
+        if (deletedTransaction.type === 'income') {
+          setBalance(prevBalance => prevBalance - deletedTransaction.amount);
+        } else {
+          setExpenses(prevExpenses => prevExpenses - deletedTransaction.amount);
+        }
+      }
+    } catch (error) {
+      console.error('Error deleting transaction:', error);
+    }
   };
 
   // Open the popup for adding a transaction
@@ -152,7 +213,7 @@ const ClientData: React.FC = () => {
       </div>
       
       <div className="col-span-3">
-        <TransactionTable transactions={transactions} />
+        <TransactionTable transactions={transactions} onEdit={handleEdit} onDelete={handleDelete} />
       </div>
 
       <div className="col-span-3 flex items-center justify-center">
@@ -167,12 +228,22 @@ const ClientData: React.FC = () => {
       </footer>
 
       {isPopupOpen && popupType && (
-        <ExpensePopup
+        <PopUp
           type={popupType}
           onSubmit={handleAddTransaction}
           onClose={() => setIsPopupOpen(false)}
         />
       )}
+
+      {isEditPopupOpen && selectedTransaction && (
+        <PopUp
+          type={selectedTransaction.type}
+          initialTransaction={selectedTransaction}
+          onSubmit={handleEditSubmission}
+          onClose={() => setIsEditPopupOpen(false)}
+        />
+      )}
+      
     </div>
   );
 };

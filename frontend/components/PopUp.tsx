@@ -1,16 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+
+// Define the structure of a Transaction object
+interface Transaction {
+  _id: string;
+  userId: string;
+  description: string;
+  amount: number;
+  type: string;
+  date: string;
+}
 
 interface ExpensePopupProps {
   type: 'income' | 'expense';
+  initialTransaction?: Transaction; // Optional prop for editing
   onSubmit: (description: string, amount: number, date: string) => void;
   onClose: () => void;
 }
 
-const ExpensePopup: React.FC<ExpensePopupProps> = ({ type, onSubmit, onClose }) => {
+const PopUp: React.FC<ExpensePopupProps> = ({ type, initialTransaction, onSubmit, onClose }) => {
   const [description, setDescription] = useState<string>('');
   const [amount, setAmount] = useState<number>(0);
-  const [date, setDate] = useState<string>(getCurrentDateFormatted()); 
-  const [errorMessage, setErrorMessage] = useState<string>(''); 
+  const [date, setDate] = useState<string>(getCurrentDateFormatted());
+  const [errorMessage, setErrorMessage] = useState<string>('');
+
+  useEffect(() => {
+    if (initialTransaction) {
+      setDescription(initialTransaction.description);
+      setAmount(initialTransaction.amount);
+      setDate(initialTransaction.date);
+    }
+  }, [initialTransaction]);
 
   // Function to format current date as yyyy-mm-dd
   function getCurrentDateFormatted(): string {
@@ -27,20 +46,14 @@ const ExpensePopup: React.FC<ExpensePopupProps> = ({ type, onSubmit, onClose }) 
       setErrorMessage('Amount must be greater than zero.');
       return;
     }
-  
-    if (!isPastDate(date)) {
-      setErrorMessage('You can only choose past dates.');
-      return;
-    }
-  
+
     const formattedDate = date;
-    onSubmit(description, amount, formattedDate); 
-    setDescription(''); 
-    setAmount(0); 
-    setDate(getCurrentDateFormatted()); 
-    setErrorMessage(''); 
+    onSubmit(description, amount, formattedDate);
+    setDescription('');
+    setAmount(0);
+    setDate(getCurrentDateFormatted());
+    setErrorMessage('');
   };
-  
 
   // Function to handle amount input change
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -56,42 +69,14 @@ const ExpensePopup: React.FC<ExpensePopupProps> = ({ type, onSubmit, onClose }) 
   // Function to handle date input change
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    
-    if (!isValidDate(value) || !isPastDate(value)) {
-      setErrorMessage('You can only choose past dates.');
-    } else {
-      setErrorMessage('');
-    }
-
     setDate(value);
-  };
-
-  // Function to validate date format (yyyy-mm-dd)
-  const isValidDate = (dateString: string): boolean => {
-    const pattern = /^(\d{4})-(\d{2})-(\d{2})$/;
-    return pattern.test(dateString);
-  };
-
-  // Function to check if date is in the past
-  const isPastDate = (dateString: string): boolean => {
-    const [year, month, day] = dateString.split('-').map(Number);
-    const currentDate = new Date();
-    const currentYear = currentDate.getFullYear();
-    const currentMonth = currentDate.getMonth() + 1;
-    const currentDay = currentDate.getDate();
-
-    if (year > currentYear) return false;
-    if (year === currentYear && month > currentMonth) return false;
-    if (year === currentYear && month === currentMonth && day > currentDay) return false;
-
-    return true;
   };
 
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center">
       <div className="bg-white p-8 rounded-lg shadow-lg w-96">
         <h2 className="text-xl font-bold mb-4">
-          {type === 'expense' ? 'Add Expense' : 'Add Income'}
+          {initialTransaction ? `Edit ${type === 'expense' ? 'Expense' : 'Income'}` : `Add ${type === 'expense' ? 'Expense' : 'Income'}`}
         </h2>
         <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
           <div className="mb-4">
@@ -102,7 +87,7 @@ const ExpensePopup: React.FC<ExpensePopupProps> = ({ type, onSubmit, onClose }) 
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              autoComplete="off" 
+              autoComplete="off"
               required
             />
           </div>
@@ -114,7 +99,7 @@ const ExpensePopup: React.FC<ExpensePopupProps> = ({ type, onSubmit, onClose }) 
               value={amount}
               onChange={handleAmountChange}
               className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              autoComplete="off" 
+              autoComplete="off"
               required
             />
             {amount <= 0 && (
@@ -132,19 +117,13 @@ const ExpensePopup: React.FC<ExpensePopupProps> = ({ type, onSubmit, onClose }) 
               placeholder="yyyy-mm-dd"
               required
             />
-            {!isValidDate(date) && (
-              <p className="text-red-500 text-xs mt-1">Invalid date format (yyyy-mm-dd).</p>
-            )}
-            {!isPastDate(date) && (
-              <p className="text-red-500 text-xs mt-1">You can only choose past dates.</p>
-            )}
           </div>
           <div className="flex justify-end">
             <button
               type="submit"
               className="bg-blue-500 text-white py-2 px-4 rounded-md shadow hover:bg-blue-600"
             >
-              Submit
+              {initialTransaction ? 'Update' : 'Submit'}
             </button>
             <button
               type="button"
@@ -160,4 +139,4 @@ const ExpensePopup: React.FC<ExpensePopupProps> = ({ type, onSubmit, onClose }) 
   );
 };
 
-export default ExpensePopup;
+export default PopUp;

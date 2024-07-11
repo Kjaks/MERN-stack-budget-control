@@ -1,23 +1,23 @@
 import React from 'react';
 
-// Define the structure of a Transaction object
 interface Transaction {
   _id: string;
   userId: string;
   description: string;
   amount: number;
-  type: string;
+  type: 'income' | 'expense';
   date: string;
 }
 
-// Define the props for the TransactionTable component
 interface TransactionTableProps {
   transactions: Transaction[];
+  onEdit: (id: string) => void;
+  onDelete: (id: string) => void;
 }
 
-// TransactionTable component definition
-const TransactionTable: React.FC<TransactionTableProps> = ({ transactions }) => {
-  const sortedTransactions = transactions.sort((a, b) => {
+const TransactionTable: React.FC<TransactionTableProps> = ({ transactions, onEdit, onDelete }) => {
+  // Ensure to create a new sorted array to avoid mutating original data
+  const sortedTransactions = [...transactions].sort((a, b) => {
     return new Date(b.date).getTime() - new Date(a.date).getTime();
   });
 
@@ -30,6 +30,7 @@ const TransactionTable: React.FC<TransactionTableProps> = ({ transactions }) => 
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -40,6 +41,20 @@ const TransactionTable: React.FC<TransactionTableProps> = ({ transactions }) => 
                   {transaction.type === 'expense' ? '-' : ''}${Math.abs(transaction.amount)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">{new Date(transaction.date).toLocaleDateString()}</td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <button
+                    onClick={() => onEdit(transaction._id)}
+                    className="text-blue-600 hover:text-blue-800 mr-2"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => onDelete(transaction._id)}
+                    className="text-red-600 hover:text-red-800"
+                  >
+                    Delete
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>

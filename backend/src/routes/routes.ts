@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { register, login } from '../controllers/auth.controller';
-import { addTransaction, getTransactions } from '../controllers/transaction.controller';
+import { addTransaction, updateTransaction, getTransactions, deleteTransaction } from '../controllers/transaction.controller';
 
 // Create a new Router instance
 const router: Router = Router();
@@ -11,10 +11,13 @@ router.post('/register', register);
 // Route to handle user login
 router.post('/login', login);
 
-// Route to add a new transaction
-router.post('/transactions', addTransaction);
+router.post('/transactions', addTransaction);  // Endpoint to add a transaction
 
-// Route to get transactions for a specific user by userId
-router.get('/transactions/:userId', getTransactions);
+router.put('/transactions/:id', updateTransaction);  // Endpoint to update a transaction by ID
+
+router.get('/transactions/:userId', getTransactions);  // Endpoint to get transactions by user ID
+
+router.delete('/transactions/:id', deleteTransaction);  // Endpoint to delete a transaction by ID
+
 
 export default router;

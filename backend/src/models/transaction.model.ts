@@ -1,21 +1,21 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Document, Schema, Model } from 'mongoose';
 
-// Interface to define the structure of a Transaction document
 export interface ITransaction extends Document {
-  userId: mongoose.Types.ObjectId;
+  userId: string;
   description: string;
   amount: number;
   type: 'income' | 'expense';
   date: Date;
 }
 
-// Define the schema for the Transaction model
-const TransactionSchema: Schema = new Schema({
-  userId: { type: mongoose.Types.ObjectId, ref: 'User', required: true }, 
-  description: { type: String, required: true }, 
-  amount: { type: Number, required: true }, 
-  type: { type: String, enum: ['income', 'expense'], required: true },  
-  date: { type: Date, required: true }  
+const transactionSchema = new Schema<ITransaction>({
+  userId: { type: String, required: true },
+  description: { type: String, required: true },
+  amount: { type: Number, required: true },
+  type: { type: String, enum: ['income', 'expense'], required: true },
+  date: { type: Date, required: true },
 });
 
-export default mongoose.model<ITransaction>('Transaction', TransactionSchema);
+const TransactionModel: Model<ITransaction> = mongoose.model<ITransaction>('Transaction', transactionSchema);
+
+export default TransactionModel;
