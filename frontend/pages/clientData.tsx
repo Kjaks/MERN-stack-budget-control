@@ -210,7 +210,7 @@ const ClientData: React.FC = () => {
         </div>
         <div className="flex items-center justify-self-stretch col-span-1">
           <h1 className="text-4xl font-bold text-gray-800 text-center pl-12">
-            ¡Hola, {userName}!
+            Hi, {userName}!
           </h1>
         </div>
         <div className="flex items-center justify-end col-span-1">
