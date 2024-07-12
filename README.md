@@ -1,5 +1,7 @@
 A Budget Control App using MERN stack, along with typescript
 
+https://github.com/user-attachments/assets/ac58cb6b-b889-438b-a59c-621319d14559
+
 ## Installation
 
 ### Step 1: Configure the Database
