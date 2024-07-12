@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import mongoose from 'mongoose';
 import TransactionModel, { ITransaction } from '../models/transaction.model';
 
-// Define la estructura de un objeto Transaction
+// Define the structure of a Transaction object
 interface Transaction {
   _id: string;
   description: string;
@@ -33,36 +33,32 @@ export const addTransaction = async (req: Request, res: Response) => {
   }
 };
 
+// Update a transaction
 export const updateTransaction = async (req: Request, res: Response) => {
   const { id } = req.params;
   const { description, amount, type, date } = req.body;
 
   try {
-    // Verifica si el ID es válido
     if (!mongoose.isValidObjectId(id)) {
-      return res.status(400).json({ error: 'ID de transacción inválido.' });
+      return res.status(400).json({ error: 'Invalid transaction ID.' }); 
     }
 
-    // Construye el objeto con los campos a actualizar
     const updateFields: Partial<Transaction> = {};
     if (description) updateFields.description = description;
     if (amount) updateFields.amount = amount;
     if (type) updateFields.type = type;
     if (date) updateFields.date = new Date(date);
 
-    // Actualiza la transacción en la base de datos
     const updatedTransaction = await TransactionModel.findByIdAndUpdate(id, updateFields, { new: true });
 
-    // Verifica si la transacción fue encontrada y actualizada
     if (!updatedTransaction) {
-      return res.status(404).json({ error: 'Transacción no encontrada.' });
+      return res.status(404).json({ error: 'Transaction not found.' });
     }
 
-    // Envía la transacción actualizada como respuesta
     res.status(200).json(updatedTransaction);
   } catch (error) {
-    console.error('Error actualizando transacción:', error);
-    res.status(500).json({ error: 'Error al actualizar la transacción.' });
+    console.error('Error updating transaction:', error);
+    res.status(500).json({ error: 'Error updating the transaction.' });
   }
 };
 
@@ -82,23 +78,22 @@ export const getTransactions = async (req: Request, res: Response) => {
 
 // Delete a transaction by ID
 export const deleteTransaction = async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const { id } = req.params; 
 
   try {
     if (!mongoose.isValidObjectId(id)) {
-      return res.status(400).json({ error: 'Invalid transaction ID.' });
+      return res.status(400).json({ error: 'Invalid transaction ID.' }); 
     }
 
-    const deletedTransaction = await TransactionModel.findByIdAndDelete(id);
+    const deletedTransaction = await TransactionModel.findByIdAndDelete(id); 
 
     if (!deletedTransaction) {
-      return res.status(404).json({ error: 'Transaction not found.' });
+      return res.status(404).json({ error: 'Transaction not found.' }); 
     }
 
-    res.status(200).json({ message: 'Transaction deleted successfully.', deletedTransaction });
+    res.status(200).json({ message: 'Transaction deleted successfully.', deletedTransaction }); 
   } catch (error) {
-    console.error('Error deleting transaction:', error);
-    res.status(500).json({ error: 'Error deleting the transaction.' });
+    console.error('Error deleting transaction:', error); 
+    res.status(500).json({ error: 'Error deleting the transaction.' }); 
   }
 };
-

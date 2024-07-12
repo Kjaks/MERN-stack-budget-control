@@ -1,5 +1,6 @@
 import mongoose, { Document, Schema, Model } from 'mongoose';
 
+// Interface to define the structure of a Transaction document
 export interface ITransaction extends Document {
   userId: string;
   description: string;
@@ -8,6 +9,7 @@ export interface ITransaction extends Document {
   date: Date;
 }
 
+// Define the schema for the Transaction model
 const transactionSchema = new Schema<ITransaction>({
   userId: { type: String, required: true },
   description: { type: String, required: true },

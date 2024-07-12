@@ -6,7 +6,7 @@ import PopUp from '../components/PopUp';
 import Image from 'next/image';
 import Link from 'next/link';
 
-// Define el tipo de datos de una transacción
+// Define the data type of a transaction
 interface Transaction {
   _id: string;
   userId: string;
@@ -14,24 +14,6 @@ interface Transaction {
   amount: number;
   type: 'income' | 'expense';
   date: string;
-}
-
-// Define la estructura de MonthData para los resúmenes financieros
-interface MonthData {
-  income: number;
-  expenses: number;
-  savings: number;
-}
-
-// Define la estructura de ChartData para los datos del gráfico
-interface ChartData {
-  labels: string[];
-  datasets: {
-    label: string;
-    data: number[];
-    backgroundColor: string[];
-    hoverBackgroundColor: string[];
-  }[];
 }
 
 const ClientData: React.FC = () => {
@@ -42,21 +24,15 @@ const ClientData: React.FC = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isPopupOpen, setIsPopupOpen] = useState<boolean>(false);
   const [popupType, setPopupType] = useState<'income' | 'expense' | null>(null);
-  const [yearsAvailable, setYearsAvailable] = useState<number[]>([]);
-  const [monthsAvailable, setMonthsAvailable] = useState<string[]>([]);
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
-  const [monthData, setMonthData] = useState<MonthData>({ income: 0, expenses: 0, savings: 0 });
-  const [annualSavings, setAnnualSavings] = useState<number>(0);
   const [isEditPopupOpen, setIsEditPopupOpen] = useState<boolean>(false);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
-  const [chartData, setChartData] = useState<ChartData | null>(null); // Estado para los datos del gráfico
 
-  // Obtener el mes y el año actual
   const currentMonth = new Date().getMonth();
   const currentYear = new Date().getFullYear();
 
-  // Cargar datos del usuario y transacciones al montar el componente
+  // Load user data and transactions when the component is mounted.
   useEffect(() => {
     const storedUserName = localStorage.getItem('userName');
     const storedUserId = localStorage.getItem('userId');
@@ -75,7 +51,7 @@ const ClientData: React.FC = () => {
     }
   }, []);
 
-  // Calcular saldos y gastos
+  // Calculate balances and expenses.
   const calculateBalances = (transactions: Transaction[]) => {
     let totalBalance = 0;
     let totalExpenses = 0;
@@ -102,47 +78,30 @@ const ClientData: React.FC = () => {
       }
     });
   
-    const annualSavings = totalIncome - totalExpenses;
     setTransactions(transactions);
     setBalance(totalBalance);
     setExpenses(totalExpenses);
-    setMonthData({
-      income: monthIncome,
-      expenses: monthExpenses,
-      savings: monthIncome - monthExpenses,
-    });
-    setAnnualSavings(annualSavings);
   
-    // Actualizar años disponibles
     const yearsWithTransactions = Array.from(new Set(transactions.map(transaction => new Date(transaction.date).getFullYear())));
-    setYearsAvailable(yearsWithTransactions);
   
-    // Si no hay transacciones, restablecer los estados relacionados
     if (yearsWithTransactions.length === 0) {
       setSelectedYear(null);
-      setMonthsAvailable([]);
       setSelectedMonth(null);
-      setChartData(null); // Asegúrate de limpiar los datos del gráfico si no hay transacciones
     } else {
-      // Si no hay un año seleccionado o el año seleccionado no está disponible, seleccionar automáticamente el primer año
       if (!selectedYear || !yearsWithTransactions.includes(selectedYear)) {
         setSelectedYear(Math.min(...yearsWithTransactions));
       }
     }
   
-    // También restablecer el mes y los datos del gráfico
     if (yearsWithTransactions.length === 0) {
       setSelectedYear(null);
       setSelectedMonth(null);
-      setChartData(null);
     } else {
-      // Si hay transacciones, asegurarse de que el mes seleccionado sea válido
       const monthsWithTransactions = Array.from(new Set(
         transactions
           .filter(transaction => new Date(transaction.date).getFullYear() === selectedYear)
           .map(transaction => new Date(transaction.date).toLocaleString('default', { month: 'long' }))
       ));
-      setMonthsAvailable(monthsWithTransactions);
   
       if (!selectedMonth || !monthsWithTransactions.includes(selectedMonth)) {
         setSelectedMonth(monthsWithTransactions.length > 0 ? monthsWithTransactions[0] : null);
@@ -151,7 +110,7 @@ const ClientData: React.FC = () => {
   };
   
 
-  // Manejar la adición de una nueva transacción
+  // Handle the addition of a new transaction.
   const handleAddTransaction = (description: string, amount: number, date: string) => {
     const type = popupType === 'income' ? 'income' : 'expense';
 
@@ -165,7 +124,6 @@ const ClientData: React.FC = () => {
     .then(response => {
       const newTransaction = response.data;
 
-      // Actualizar transacciones y balances basados en la nueva transacción
       const updatedTransactions = [...transactions, newTransaction];
       calculateBalances(updatedTransactions);
     })
@@ -176,7 +134,7 @@ const ClientData: React.FC = () => {
     setIsPopupOpen(false);
   };
 
-  // Función para manejar la edición de una transacción
+  // Function to handle the editing of a transaction.
   const handleEdit = (id: string) => {
     const transactionToEdit = transactions.find(transaction => transaction._id === id);
     if (transactionToEdit) {
@@ -187,7 +145,7 @@ const ClientData: React.FC = () => {
     }
   };
 
-  // Manejar la sumisión de la edición de una transacción
+  // Handle the submission of a transaction edit.
   const handleEditSubmission = (description: string, amount: number, date: string) => {
     if (!selectedTransaction) return;
 
@@ -213,67 +171,24 @@ const ClientData: React.FC = () => {
       });
   };
 
-// Función para manejar la eliminación de una transacción
-const handleDelete = async (id: string) => {
-  try {
-    await axios.delete(`http://localhost:8000/api/transactions/${id}`);
-    const updatedTransactions = transactions.filter(transaction => transaction._id !== id);
-    calculateBalances(updatedTransactions);
-  } catch (error) {
-    console.error('Error deleting transaction:', error);
-  }
-};
+  // Function to handle the deletion of a transaction.
+  const handleDelete = async (id: string) => {
+    try {
+      await axios.delete(`http://localhost:8000/api/transactions/${id}`);
+      const updatedTransactions = transactions.filter(transaction => transaction._id !== id);
+      calculateBalances(updatedTransactions);
+    } catch (error) {
+      console.error('Error deleting transaction:', error);
+    }
+  };
 
-  // Abrir el popup para añadir una transacción
+  // Open the popup to add a transaction.
   const handlePopupOpen = (type: 'income' | 'expense') => {
     setPopupType(type);
     setIsPopupOpen(true);
   };
 
-  // Generar datos del gráfico cuando cambie el año o el mes seleccionado
-  useEffect(() => {
-    if (selectedYear !== null && selectedMonth !== null) {
-      generateChartData(selectedYear, selectedMonth);
-    }
-  }, [selectedYear, selectedMonth]);
-
-  // Generar datos del gráfico basados en el año y mes seleccionados
-  const generateChartData = (year: number, month: string) => {
-    const { income, expenses } = calculateTotalSavingsMonthly(year, month);
-
-    setChartData({
-      labels: ['Ingresos', 'Gastos'],
-      datasets: [
-        {
-          label: 'Distribución Financiera',
-          data: [income, expenses],
-          backgroundColor: ['#4caf50', '#f44336'],
-          hoverBackgroundColor: ['#66bb6a', '#ef5350']
-        }
-      ]
-    });
-  };
-
-  // Calcular ingresos y gastos totales mensuales
-  const calculateTotalSavingsMonthly = (year: number, month: string) => {
-    let totalIncome = 0;
-    let totalExpenses = 0;
-
-    transactions.forEach(transaction => {
-      const transactionDate = new Date(transaction.date);
-      if (transactionDate.getFullYear() === year && transactionDate.toLocaleString('default', { month: 'long' }) === month) {
-        if (transaction.type === 'income') {
-          totalIncome += transaction.amount;
-        } else {
-          totalExpenses += Math.abs(transaction.amount);
-        }
-      }
-    });
-
-    return { income: totalIncome, expenses: totalExpenses };
-  };
-
-  // Manejar cambio de año seleccionado
+  // Handle change of selected year.
   useEffect(() => {
     if (selectedYear !== null) {
       const monthsWithTransactions = Array.from(new Set(
@@ -281,9 +196,7 @@ const handleDelete = async (id: string) => {
           .filter(transaction => new Date(transaction.date).getFullYear() === selectedYear)
           .map(transaction => new Date(transaction.date).toLocaleString('default', { month: 'long' }))
       ));
-      setMonthsAvailable(monthsWithTransactions);
 
-      // Si no hay mes seleccionado o el mes seleccionado no está disponible, seleccionar el primer mes disponible
       if (!selectedMonth || !monthsWithTransactions.includes(selectedMonth)) {
         setSelectedMonth(monthsWithTransactions.length > 0 ? monthsWithTransactions[0] : null);
       }
@@ -319,8 +232,8 @@ const handleDelete = async (id: string) => {
 
       <div className="col-span-3 flex items-center justify-center">
         <section className="flex flex-col md:flex-row items-center justify-around gap-4 w-1/2 g-1/2">
-          <button onClick={() => handlePopupOpen('income')} className="bg-green-500 text-white py-3 px-6 rounded-lg shadow hover:bg-green-600 text-center">Agregar Ingreso</button>
-          <button onClick={() => handlePopupOpen('expense')} className="bg-red-500 text-white py-3 px-6 rounded-lg shadow hover:bg-red-600 text-center">Agregar Gasto</button>
+          <button onClick={() => handlePopupOpen('income')} className="bg-green-500 text-white py-3 px-6 rounded-lg shadow hover:bg-green-600 text-center">Add Income</button>
+          <button onClick={() => handlePopupOpen('expense')} className="bg-red-500 text-white py-3 px-6 rounded-lg shadow hover:bg-red-600 text-center">Add Expense</button>
         </section>
       </div>
 

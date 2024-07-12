@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 
-// Define the structure of a Transaction object
 interface Transaction {
   _id: string;
   userId: string;
@@ -12,7 +11,7 @@ interface Transaction {
 
 interface ExpensePopupProps {
   type: 'income' | 'expense';
-  initialTransaction?: Transaction; // Optional prop for editing
+  initialTransaction?: Transaction;
   onSubmit: (description: string, amount: number, date: string) => void;
   onClose: () => void;
 }
@@ -31,7 +30,7 @@ const PopUp: React.FC<ExpensePopupProps> = ({ type, initialTransaction, onSubmit
     }
   }, [initialTransaction]);
 
-  // Function to format current date as yyyy-mm-dd
+  // Function to get the current date formatted as yyyy-mm-dd
   function getCurrentDateFormatted(): string {
     const today = new Date();
     const day = today.getDate().toString().padStart(2, '0');
@@ -42,13 +41,26 @@ const PopUp: React.FC<ExpensePopupProps> = ({ type, initialTransaction, onSubmit
 
   // Function to handle form submission
   const handleSubmit = () => {
+    const today = new Date();
+    const selectedDate = new Date(date);
+
+    // Validate amount and date
     if (amount <= 0) {
       setErrorMessage('Amount must be greater than zero.');
       return;
     }
+    if (selectedDate > today) {
+      setErrorMessage('Date cannot be in the future.');
+      return;
+    }
 
-    const formattedDate = date;
-    onSubmit(description, amount, formattedDate);
+    // Call the onSubmit prop with the valid input
+    onSubmit(description, amount, date);
+    resetForm(); // Reset the form after submission
+  };
+
+  // Function to reset form fields
+  const resetForm = () => {
     setDescription('');
     setAmount(0);
     setDate(getCurrentDateFormatted());
@@ -58,10 +70,10 @@ const PopUp: React.FC<ExpensePopupProps> = ({ type, initialTransaction, onSubmit
   // Function to handle amount input change
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = Number(e.target.value);
+    setAmount(value);
     if (value <= 0) {
       setErrorMessage('Amount must be greater than zero.');
     } else {
-      setAmount(value);
       setErrorMessage('');
     }
   };
@@ -117,6 +129,9 @@ const PopUp: React.FC<ExpensePopupProps> = ({ type, initialTransaction, onSubmit
               placeholder="yyyy-mm-dd"
               required
             />
+            {errorMessage && (
+              <p className="text-red-500 text-xs mt-1">{errorMessage}</p>
+            )}
           </div>
           <div className="flex justify-end">
             <button

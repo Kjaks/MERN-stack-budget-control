@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Pie } from 'react-chartjs-2';
+import { Pie } from 'react-chartjs-2'; 
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, Title, LineController, BarElement } from 'chart.js';
 
+// Register Chart.js components
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, Title, LineController, BarElement);
 
+// Define the structure of a transaction
 interface Transaction {
   _id: string;
   userId: string;
@@ -13,39 +15,42 @@ interface Transaction {
   date: string;
 }
 
+// Define the props for the FinancialSummary component
 interface FinancialSummaryProps {
-  balance: number;
-  expenses: number;
+  balance: number; 
+  expenses: number; 
   transactions: Transaction[];
 }
 
-const FinancialSummary: React.FC<FinancialSummaryProps> = ({ balance, expenses, transactions }) => {
+// Functional component for financial summary
+const FinancialSummary: React.FC<FinancialSummaryProps> = ({ transactions }) => {
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
   const [monthsAvailable, setMonthsAvailable] = useState<string[]>([]);
   const [yearsAvailable, setYearsAvailable] = useState<number[]>([]);
+
+  // State for chart data
   const [chartData, setChartData] = useState<any>({
-    labels: ['Incomes', 'Expenses'],
+    labels: ['Incomes', 'Expenses'], 
     datasets: [
       {
         label: 'Financial Distribution',
-        data: [0, 0],
-        backgroundColor: ['#4caf50', '#f44336'],
+        data: [0, 0], 
+        backgroundColor: ['#4caf50', '#f44336'], 
         hoverBackgroundColor: ['#66bb6a', '#ef5350']
       }
     ]
   });
 
+  // Effect to initialize available years based on transactions
   useEffect(() => {
-    // Extract all years with transactions from the list of transactions
     const yearsWithTransactions = Array.from(new Set(transactions.map(transaction => new Date(transaction.date).getFullYear())));
     setYearsAvailable(yearsWithTransactions);
-    
-      setSelectedYear(Math.min(...yearsWithTransactions));
+    setSelectedYear(Math.min(...yearsWithTransactions));
   }, [transactions]);
 
+  // Effect to update available months when the selected year changes
   useEffect(() => {
-    // Update available months when selected year changes
     if (selectedYear !== null) {
       const monthsWithTransactions = Array.from(new Set(
         transactions
@@ -54,28 +59,27 @@ const FinancialSummary: React.FC<FinancialSummaryProps> = ({ balance, expenses, 
       ));
       setMonthsAvailable(monthsWithTransactions);
 
-      // If no month is selected yet or selected month is not available, select the first available month
       if (!selectedMonth || !monthsWithTransactions.includes(selectedMonth)) {
         setSelectedMonth(monthsWithTransactions.length > 0 ? monthsWithTransactions[0] : null);
       }
     }
   }, [selectedYear, transactions, selectedMonth]);
 
+  // Effect to generate chart data when selected month or year changes
   useEffect(() => {
-    // Generate chart data when selected month or year changes
     if (selectedYear !== null && selectedMonth !== null) {
       generateChartData(selectedYear, selectedMonth);
     }
   }, [selectedYear, selectedMonth, transactions]);
 
+  // Function to generate chart data based on the selected year and month
   const generateChartData = (year: number, month: string) => {
     const { income, expenses } = calculateTotalSavingsMonthly(year, month);
-    
     setChartData({
       labels: ['Incomes', 'Expenses'],
       datasets: [
         {
-          label: 'Financial Distribution',
+          label: 'Financial Distribution', 
           data: [income, expenses],
           backgroundColor: ['#4caf50', '#f44336'],
           hoverBackgroundColor: ['#66bb6a', '#ef5350']
@@ -84,14 +88,17 @@ const FinancialSummary: React.FC<FinancialSummaryProps> = ({ balance, expenses, 
     });
   };
 
+  // Handler for month selection change
   const handleMonthChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedMonth(event.target.value);
+    setSelectedMonth(event.target.value); 
   };
 
+  // Handler for year selection change
   const handleYearChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedYear(parseInt(event.target.value));
+    setSelectedYear(parseInt(event.target.value)); 
   };
 
+  // Function to calculate total savings based on year and month
   const calculateTotalSavings = (year: number | null, month: string | null) => {
     if (year !== null && month === null) {
       const selectedTransactions = transactions.filter(transaction =>
@@ -99,7 +106,7 @@ const FinancialSummary: React.FC<FinancialSummaryProps> = ({ balance, expenses, 
       );
 
       const totalIncome = selectedTransactions.reduce((accumulator, transaction) =>
-        accumulator + (transaction.type === 'income' ? transaction.amount : 0), 0);
+        accumulator + (transaction.type === 'income' ? transaction.amount : 0), 0); 
 
       const totalExpenses = selectedTransactions.reduce((accumulator, transaction) =>
         accumulator + (transaction.type === 'expense' ? Math.abs(transaction.amount) : 0), 0);
@@ -117,12 +124,13 @@ const FinancialSummary: React.FC<FinancialSummaryProps> = ({ balance, expenses, 
       const totalExpenses = selectedTransactions.reduce((accumulator, transaction) =>
         accumulator + (transaction.type === 'expense' ? Math.abs(transaction.amount) : 0), 0);
 
-      return totalIncome - totalExpenses;
+      return totalIncome - totalExpenses; 
     }
 
     return 0;
   };
 
+  // Function to calculate total savings for a specific month and year
   const calculateTotalSavingsMonthly = (year: number, month: string) => {
     const selectedTransactions = transactions.filter(transaction =>
       new Date(transaction.date).getFullYear() === year &&
@@ -133,21 +141,21 @@ const FinancialSummary: React.FC<FinancialSummaryProps> = ({ balance, expenses, 
       accumulator + (transaction.type === 'income' ? transaction.amount : 0), 0);
 
     const totalExpenses = selectedTransactions.reduce((accumulator, transaction) =>
-      accumulator + (transaction.type === 'expense' ? Math.abs(transaction.amount) : 0), 0);
+      accumulator + (transaction.type === 'expense' ? Math.abs(transaction.amount) : 0), 0); 
 
     return {
-      income: totalIncome,
+      income: totalIncome, 
       expenses: totalExpenses
     };
   };
 
   return (
-    <div className="flex flex-col items-center justify-center mt-4">
-      <div className="bg-white shadow-md p-4 rounded-lg w-full md:w-3/4 lg:w-1/2">
+    <div className="flex flex-col items-center justify-center mt-4"> 
+      <div className="bg-white shadow-md p-4 rounded-lg w-full md:w-3/4 lg:w-1/2"> 
         <div className="mt-4 text-center">
-          {selectedYear !== Infinity && (
+          {selectedYear !== Infinity && ( 
             <h1 className="text-3xl font-bold mb-2">
-              Total savings for year {selectedYear}: <span className={calculateTotalSavings(selectedYear, null) < 0 ? 'text-red-500' : 'text-green-500'}>{calculateTotalSavings(selectedYear, null)} $</span>
+              Total savings for year {selectedYear}: <span className={calculateTotalSavings(selectedYear, null) < 0 ? 'text-red-500' : 'text-green-500'}>{calculateTotalSavings(selectedYear, null)} $</span> {/* Display total savings for selected year */}
             </h1>
           )}
           <p className="text-3xl font-bold mb-2">
@@ -155,7 +163,7 @@ const FinancialSummary: React.FC<FinancialSummaryProps> = ({ balance, expenses, 
               <>
                 Total savings for {selectedMonth}: <span className={calculateTotalSavings(selectedYear, selectedMonth) < 0 ? 'text-red-500' : 'text-green-500'}>
                   {calculateTotalSavings(selectedYear, selectedMonth)} $
-                </span>
+                </span> {/* Display total savings for selected month */}
               </>
             )}
           </p>
@@ -164,7 +172,7 @@ const FinancialSummary: React.FC<FinancialSummaryProps> = ({ balance, expenses, 
         <div className="flex flex-col items-center justify-center mb-4">
           <div className="w-full md:w-1/3 px-4 mb-4 md:mb-0">
             <div className="relative" style={{ height: '300px' }}>
-              <Pie data={chartData} />
+              <Pie data={chartData} /> {/* Render Pie chart */}
             </div>
           </div>
           <div className="w-full md:w-1/2 px-4">
@@ -207,4 +215,4 @@ const FinancialSummary: React.FC<FinancialSummaryProps> = ({ balance, expenses, 
   );
 };
 
-export default FinancialSummary;
+export default FinancialSummary; 

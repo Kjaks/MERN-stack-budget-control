@@ -11,13 +11,17 @@ router.post('/register', register);
 // Route to handle user login
 router.post('/login', login);
 
-router.post('/transactions', addTransaction);  // Endpoint to add a transaction
+// Route to add a transaction
+router.post('/transactions', addTransaction);
 
-router.put('/transactions/:id', updateTransaction);  // Endpoint to update a transaction by ID
+// Route to update a transaction by ID
+router.put('/transactions/:id', updateTransaction);  
 
-router.get('/transactions/:userId', getTransactions);  // Endpoint to get transactions by user ID
+// Route to get transactions by user ID
+router.get('/transactions/:userId', getTransactions); 
 
-router.delete('/transactions/:id', deleteTransaction);  // Endpoint to delete a transaction by ID
+// Route to delete a transaction by ID
+router.delete('/transactions/:id', deleteTransaction);  
 
 
 export default router;
