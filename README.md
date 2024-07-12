@@ -1,6 +1,4 @@
-## Description
-
-This is a template of a MERN stack project
+A Budget Control App using MERN stack, along with typescript
 
 ## Installation
 
